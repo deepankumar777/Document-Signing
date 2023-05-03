@@ -1,5 +1,7 @@
 import React, { useState } from "react";
 
+
+
 import { useDispatch, useSelector } from "react-redux";
 import {
   connectWallet,
@@ -8,6 +10,8 @@ import {
   uploadFile,
   backToStart,
 } from "../store/walletSlice.js";
+import  { ethers } from 'ethers';
+
 
 function Wallet() {
   const dispatch = useDispatch();
@@ -69,43 +73,50 @@ function Wallet() {
     }
   };
 
-  const handleSign = () => {
-    if (uploadedFile) {
-      //const formData = new FormData();
-      //formData.append('filehash',hash);
-      //formData.append('address',window.ethereum.selectedAddress)
-      fetch("http://localhost:3001/sign-pdf", {
+  const handleSign = async () => {
+    if (uploadedFile) {  
+const provider = new ethers.providers.Web3Provider(window.ethereum);
+await provider.send('eth_requestAccounts', []); // <- this promps user to connect metamask
+const signer = provider.getSigner();
+let userSign;
+userSign = await signer.signMessage(hash);
+console.log(userSign);
+setSignedhash(userSign);
+console.log("ll"+ signedhash)
+ fetch("http://localhost:3001/sign-pdf", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ HASH: hash }),
+        body:  JSON.stringify({HASH: userSign}) ,
       })
-        .then((response) => {
-          if (response.ok) {
-            dispatch(backToStart());
-            console.log("File signed successfully");
-            // console.log(response);
-            return response.json();
+      .then((response) => {
+            if (response.ok) {
+              dispatch(backToStart());
 
-          } else {
-            alert("Error signing file");
-          }
+              console.log("File signed successfully");
+              // console.log(response);
+              return response.json();
+            } else {
+                    alert("Error signing file");
+                  }
         })
-        .then((data) => {
+           .then((data) => {
           //console.log(data);
           const { Sign, mongoid } = data;
           console.log(Sign);
           setCid(null);
           setHash(null);
-          setSignedhash(Sign);
-
-          
         });
-    } else {
-      alert("Select a pdf file to sign");
+
+  
+
     }
+    else {
+        alert("Select a pdf file to sign");
+      }
   };
+
 
   return (
     <div>

@@ -118,88 +118,11 @@ app.post("/sign-pdf", async (req, res) => {
    const { HASH } = req.body;
    console.log("ha"+HASH);
    
-//const privateKey = '92756ce0d4f02606283588e705947f9b934866d63b080dee1ac80f1eef0e4649';
-// const provider = new ethers.providers.JsonRpcProvider('https://sepolia.infura.io/v3/d718b91088494cf4bf56743003935fe5');
-// const wallet = new ethers.Wallet(privateKey, provider);
-// console.log("WA"+wallet.address);
-// //0xbaBC8ac93F69aA381FC1288d2e176052a04068B9
-
-// const message = HASH;
-// let messageHash = ethers.utils.id(message);
-
-// let messageHashBytes = ethers.utils.arrayify(messageHash)
-// let flatSig = await wallet.signMessage(messageHashBytes);
 
 
-//const signature = await wallet.signMessage(message);
 
-const message = HASH;
-//const provider = new ethers.providers.Web3Provider(window.ethereum);
- //const provider = new ethers.providers.JsonRpcProvider('https://sepolia.infura.io/v3/d718b91088494cf4bf56743003935fe5');
- //await ethereum.request({ method: 'eth_requestAccounts' });
- //await provider.send('eth_requestAccounts', []);
-
-// const signer = provider.getSigner();
-// let sign;
-// signer.signMessage(message).then((signature) => {
-//   console.log('Signature:', signature);
-//   sign = signature;
-// }).catch((error) => {
-//   console.error(error);
-// });
-
-//console.log("sig"+flatSig);
-
-// const provider = await detectProvider();
-//   if (!provider) {
-//     console.error('Metamask not detected');
-//     return;
-//   }
-
-//   const web3Provider = new ethers.providers.Web3Provider(provider);
-//   await web3Provider.send('eth_requestAccounts', []);
-//   const signer = web3Provider.getSigner();
-  
-//   const sign = await signer.signMessage(message);
-//   console.log('Signature:', sign);
-
-
-const provider = new ethers.providers.JsonRpcProvider('https://sepolia.infura.io/v3/d718b91088494cf4bf56743003935fe5');
-await ethereum.request({ method: 'eth_requestAccounts' });
-const signer = provider.getSigner();
-let sign;
-sign = await signer.signMessage(message);
-
-
-//error
-// /home/calibraint/t2/backend/node_modules/@ethersproject/logger/lib/index.js:238
-//         var error = new Error(message);
-//                     ^
-
-// Error: unknown account #0 (operation="getAddress", code=UNSUPPORTED_OPERATION, version=providers/5.7.2)
-//     at Logger.makeError (/home/calibraint/t2/backend/node_modules/@ethersproject/logger/lib/index.js:238:21)
-//     at Logger.throwError (/home/calibraint/t2/backend/node_modules/@ethersproject/logger/lib/index.js:247:20)
-//     at /home/calibraint/t2/backend/node_modules/@ethersproject/providers/lib/json-rpc-provider.js:244:24
-//     at processTicksAndRejections (node:internal/process/task_queues:96:5) {
-//   reason: 'unknown account #0',
-//   code: 'UNSUPPORTED_OPERATION',
-//   operation: 'getAddress'
-// }
-
-//error
-// ReferenceError: ethereum is not defined
-//     at /home/calibraint/t2/backend/index.js:168:1
-//     at Layer.handle [as handle_request] (/home/calibraint/t2/backend/node_modules/express/lib/router/layer.js:95:5)
-//     at next (/home/calibraint/t2/backend/node_modules/express/lib/router/route.js:144:13)
-//     at Route.dispatch (/home/calibraint/t2/backend/node_modules/express/lib/router/route.js:114:3)
-//     at Layer.handle [as handle_request] (/home/calibraint/t2/backend/node_modules/express/lib/router/layer.js:95:5)
-//     at /home/calibraint/t2/backend/node_modules/express/lib/router/index.js:284:15
-//     at Function.process_params (/home/calibraint/t2/backend/node_modules/express/lib/router/index.js:346:12)
-//     at next (/home/calibraint/t2/backend/node_modules/express/lib/router/index.js:280:10)
-//     at /home/calibraint/t2/backend/index.js:38:3
-//     at Layer.handle [as handle_request] (/home/calibraint/t2/backend/node_modules/express/lib/router/layer.js:95:5)
-res.send({Sign:sign,mongoid: id})
-updateDetails(id,sign)
+updateDetails(id,HASH)
+res.send({Sign:HASH,mongoid: id})
 
 id = null;
 
