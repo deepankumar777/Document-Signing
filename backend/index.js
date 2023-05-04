@@ -13,7 +13,7 @@ const ethers = require('ethers');
 const { ObjectId } = require('mongodb');
 //const detectProvider = require('@metamask/detect-provider');
 const detectEthereumProvider = require('@metamask/detect-provider');
-
+const Web3 = require('web3');
 
 
 
@@ -125,8 +125,6 @@ updateDetails(id,HASH)
 res.send({Sign:HASH,mongoid: id})
 
 id = null;
-
-
 
 });
 

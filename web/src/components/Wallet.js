@@ -11,6 +11,7 @@ import {
   backToStart,
 } from "../store/walletSlice.js";
 import  { ethers } from 'ethers';
+import { toUtf8Bytes } from "@ethersproject/strings";
 
 
 function Wallet() {
@@ -21,7 +22,7 @@ function Wallet() {
   const [cid, setCid] = useState(null);
   const [hash, setHash] = useState(null);
   const [signedhash, setSignedhash] = useState(null);
-
+  let userSign;
   const handleConnect = async () => {
     await window.ethereum.request({ method: "eth_requestAccounts" });
     dispatch(connectWallet());
@@ -78,7 +79,8 @@ function Wallet() {
 const provider = new ethers.providers.Web3Provider(window.ethereum);
 await provider.send('eth_requestAccounts', []); // <- this promps user to connect metamask
 const signer = provider.getSigner();
-let userSign;
+
+console.log("okkk"+hash)
 userSign = await signer.signMessage(hash);
 console.log(userSign);
 setSignedhash(userSign);
@@ -93,7 +95,7 @@ console.log("ll"+ signedhash)
       .then((response) => {
             if (response.ok) {
               dispatch(backToStart());
-
+              verify(hash,"0xbaBC8ac93F69aA381FC1288d2e176052a04068B9",userSign);
               console.log("File signed successfully");
               // console.log(response);
               return response.json();
@@ -116,6 +118,20 @@ console.log("ll"+ signedhash)
         alert("Select a pdf file to sign");
       }
   };
+
+  const verify= async(message,address,signature)=>{
+    console.log("ooooooooo")
+    console.log("hash", ethers.utils.hashMessage(message))
+    const msgBytes = toUtf8Bytes(message);
+    console.log("meBytes", msgBytes);
+    console.log("Split",ethers.utils.splitSignature(signature));
+    console.log("PRE", toUtf8Bytes("\x19Ethereum Signed Message:\n"));
+    console.log("len", String(msgBytes.length));
+    console.log("preBytes", toUtf8Bytes(String(message.length)));
+    const sa= await ethers.utils.verifyMessage(message,signature);
+    if(sa!==address)console.log("false");
+    else console.log("true");
+  }
 
 
   return (

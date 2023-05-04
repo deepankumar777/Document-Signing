@@ -1,57 +1,81 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: GPL-3.0
+pragma solidity 0.8.4;
+import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/utils/cryptography/ECDSA.sol";
+import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/utils/Strings.sol";
 
-pragma solidity ^0.8.4;
+contract a{
 
-contract sign{
-
-    struct MyData {
-    string ipfsCid;
-    bytes signature;
-    string fileHash;
-    address userAddress;
+        bytes32 h;
+      function convert(string memory str) public  returns (bytes32) {
+        bytes32 result;
+        assembly {
+            result := mload(add(str, 32))
+        }
+        
+        h = result;
+        return result;
     }
 
-    mapping(address=>MyData) public userData;
-
-    event MyDataUploaded(string ipfsCid, bytes signature, string fileHash, address indexed userAddress);
-    event check(address user);
-
-
-    function addUserDetails(string memory _ipfsCid, bytes memory _signature, string memory _fileHash, address _userAddress)public{
-        MyData memory newMyData = MyData({
-            ipfsCid: _ipfsCid,
-            signature: _signature,
-            fileHash: _fileHash,
-            userAddress: _userAddress
-        });
-
-        userData[_userAddress] = newMyData;
-
-        emit MyDataUploaded(_ipfsCid, _signature, _fileHash, _userAddress);
-
+    function getLen(string memory _fileHash) public pure returns(string memory){
+        return Strings.toString(utfStringLength(_fileHash));
+    }
+    
+    function getBytes(string memory _fileHash) public pure returns (bytes memory, bytes memory, bytes memory, bytes memory) {
+        return (
+        bytes("\x19Ethereum Signed Message:\n"), 
+        bytes(Strings.toString(utfStringLength(_fileHash))), 
+        bytes(_fileHash), 
+        bytes.concat(bytes("\x19Ethereum Signed Message:\n"), bytes(Strings.toString(utfStringLength(_fileHash))), bytes(_fileHash)));
     }
 
-    function getUserDetails(address _userAddress)public view returns(MyData memory) {
-        return userData[_userAddress];
-
+    function getHash(string memory _fileHash) public pure returns(bytes32) {
+        return keccak256(bytes.concat(bytes("\x19Ethereum Signed Message:\n"), bytes(Strings.toString(utfStringLength(_fileHash))), bytes(_fileHash)));
     }
 
-    function verifySignature(
-        string memory _fileHash, 
-        address _userAddress,
-        bytes memory _signature
-    ) public  returns (bool) {
-        bytes32 messageHash = keccak256(abi.encodePacked( _fileHash));
-        bytes32 signatureHash = keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n32", messageHash));
-         (bytes32 r, bytes32 s, uint8 v) = splitSignature(_signature);
+    function utfStringLength(string memory str) pure internal returns (uint length) {
+    uint i=0;
+    bytes memory string_rep = bytes(str);
+
+    while (i<string_rep.length)
+    {
+        if (string_rep[i]>>7==0)
+            i+=1;
+        else if (string_rep[i]>>5==bytes1(uint8(0x6)))
+            i+=2;
+        else if (string_rep[i]>>4==bytes1(uint8(0xE)))
+            i+=3;
+        else if (string_rep[i]>>3==bytes1(uint8(0x1E)))
+            i+=4;
+        else
+            //For safety
+            i+=1;
+
+        length++;
+    }
+}
+
+
+    function getAddr(bytes32 signHash, bytes memory _signature) public pure returns(address) {
+        (bytes32 r, bytes32 s, uint8 v) = splitSignature(_signature);
+        return ecrecover(signHash, v, r, s);
+    }
+
+    function verifySignature(string memory _fileHash, bytes memory _signature, address signer) public pure returns (bool) {
+    // bytes32 hash = keccak256(abi.encodePacked(message));
+    // return ECDSA.recover(hash, signature) == signer;
+
+        // bytes32 messageHash = keccak256(abi.encodePacked( _fileHash));
+        // bytes32 signatureHash = keccak256(bytes.concat(bytes("\x19Ethereum Signed Message:\n"),  bytes(Strings.toString(utfStringLength(_fileHash))), bytes(_fileHash)));
+        bytes32 signatureHash = keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n", Strings.toString(utfStringLength(_fileHash)), _fileHash));
+
+        (bytes32 r, bytes32 s, uint8 v) = splitSignature(_signature);
 
         address recoveredAddress = ecrecover(signatureHash, v,r,s);
-        emit check(recoveredAddress);
-        return (recoveredAddress == _userAddress);
-    }
-//0xbaBC8ac93F69aA381FC1288d2e176052a04068B9
+        // emit check(recoveredAddress);
+        return (recoveredAddress == signer);
+}
 
-     function splitSignature(
+function splitSignature(
         bytes memory sig
     ) public pure returns (bytes32 r, bytes32 s, uint8 v) {
         require(sig.length == 65, "invalid signature length");
@@ -76,4 +100,6 @@ contract sign{
 
         // implicitly return (r, s, v)
     }
+
+
 }
